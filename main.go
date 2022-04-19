@@ -1,4 +1,4 @@
-package arsproject
+package main
 
 import "fmt"
 
