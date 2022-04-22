@@ -1,9 +1,10 @@
 package main
 
 type Config struct {
-	entries map[string]string
+	Entries map[string]string `json:"entries"`
 }
 
 type Service struct {
-	data map[string]*Config
+	Id   string             `json:"id"`
+	Data map[string]*Config `json:"data"`
 }
