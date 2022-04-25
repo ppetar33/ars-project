@@ -1,0 +1,19 @@
+Get configurations
+
+GET localhost:8000/configurations/
+-----------------------------
+
+Get single configuration
+
+GET localhost:8000/configuration/{id}/
+-----------------------------
+
+Create configurations
+
+POST localhost:8000/configuration/
+
+{
+    "data":["hello", "world", "124"]
+}
+
+-----------------------------
