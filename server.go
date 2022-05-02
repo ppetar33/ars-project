@@ -21,7 +21,7 @@ func (ts *postServer) createConfigurationHandler(writer http.ResponseWriter, req
 	}
 
 	if mediatype != "application/json" {
-		err := errors.New("Expect application/json Content-Type")
+		err := errors.New("expect application/json Content-Type")
 		http.Error(writer, err.Error(), http.StatusUnsupportedMediaType)
 		return
 	}

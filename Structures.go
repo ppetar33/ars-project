@@ -5,6 +5,6 @@ type Config struct {
 }
 
 type Service struct {
-	Id   string             `json:"id"`
-	Data map[string]*Config `json:"data"`
+	Id   string               `json:"id"`
+	Data map[string]*[]Config `json:"data"`
 }
