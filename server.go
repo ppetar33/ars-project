@@ -49,7 +49,6 @@ func (ts *postServer) getConfigurationHandler(writer http.ResponseWriter, req *h
 	renderJSON(writer, task)
 }
 
-<<<<<<< HEAD
 func (ts *postServer) updateConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
 	id := mux.Vars(req)["id"]
 	task, ok := ts.data[id]
@@ -80,28 +79,23 @@ func (ts *postServer) updateConfigurationHandler(writer http.ResponseWriter, req
 		return
 	}
 
-	res := merge(task.Data, service.Data)
+	res := map[string]*[]Config{}
+
+	for _, m := range task.Data {
+		for k, v := range service.Data {
+			res[k] = append(res[k], v)
+		}
+	}
 
 	renderJSON(writer, res)
 }
 
 func merge(ms ...map[string]*[]Config) map[string]*[]Config {
-	res := map[string][]*[]Config{}
+	res := map[string]*[]Config{}
 	for _, m := range ms {
 		for k, v := range m {
 			res[k] = append(res[k], v)
 		}
 	}
 	return res
-=======
-func (ts *postServer) delConfiguration(writer http.ResponseWriter, req *http.Request) {
-	id := mux.Vars(req)["id"]
-	if v, ok := ts.data[id]; ok {
-		delete(ts.data, id)
-		renderJSON(writer, v)
-	} else {
-		err := errors.New("key not found")
-		http.Error(writer, err.Error(), http.StatusNotFound)
-	}
->>>>>>> develop
 }
