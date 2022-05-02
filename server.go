@@ -79,23 +79,8 @@ func (ts *postServer) updateConfigurationHandler(writer http.ResponseWriter, req
 		return
 	}
 
-	res := map[string]*[]Config{}
+	task.Id = id
+	service.Id = id
 
-	for _, m := range task.Data {
-		for k, v := range service.Data {
-			res[k] = append(res[k], v)
-		}
-	}
-
-	renderJSON(writer, res)
-}
-
-func merge(ms ...map[string]*[]Config) map[string]*[]Config {
-	res := map[string]*[]Config{}
-	for _, m := range ms {
-		for k, v := range m {
-			res[k] = append(res[k], v)
-		}
-	}
-	return res
+	renderJSON(writer, service)
 }
