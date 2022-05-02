@@ -49,6 +49,7 @@ func (ts *postServer) getConfigurationHandler(writer http.ResponseWriter, req *h
 	renderJSON(writer, task)
 }
 
+<<<<<<< HEAD
 func (ts *postServer) updateConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
 	id := mux.Vars(req)["id"]
 	task, ok := ts.data[id]
@@ -92,4 +93,15 @@ func merge(ms ...map[string]*[]Config) map[string]*[]Config {
 		}
 	}
 	return res
+=======
+func (ts *postServer) delConfiguration(writer http.ResponseWriter, req *http.Request) {
+	id := mux.Vars(req)["id"]
+	if v, ok := ts.data[id]; ok {
+		delete(ts.data, id)
+		renderJSON(writer, v)
+	} else {
+		err := errors.New("key not found")
+		http.Error(writer, err.Error(), http.StatusNotFound)
+	}
+>>>>>>> develop
 }
