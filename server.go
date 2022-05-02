@@ -21,7 +21,7 @@ func (ts *postServer) createConfigurationHandler(writer http.ResponseWriter, req
 	}
 
 	if mediatype != "application/json" {
-		err := errors.New("Expect application/json Content-Type")
+		err := errors.New("expect application/json Content-Type")
 		http.Error(writer, err.Error(), http.StatusUnsupportedMediaType)
 		return
 	}
@@ -47,4 +47,40 @@ func (ts *postServer) getConfigurationHandler(writer http.ResponseWriter, req *h
 		return
 	}
 	renderJSON(writer, task)
+}
+
+func (ts *postServer) updateConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
+	id := mux.Vars(req)["id"]
+	task, ok := ts.data[id]
+	contentType := req.Header.Get("Content-Type")
+	mediatype, _, errParse := mime.ParseMediaType(contentType)
+
+	if !ok {
+		err := errors.New("key not found")
+		http.Error(writer, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	if errParse != nil {
+		http.Error(writer, errParse.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if mediatype != "application/json" {
+		err := errors.New("expect application/json Content-Type")
+		http.Error(writer, err.Error(), http.StatusUnsupportedMediaType)
+		return
+	}
+
+	service, errDecode := decodeBody(req.Body)
+
+	if errDecode != nil {
+		http.Error(writer, errDecode.Error(), http.StatusBadRequest)
+		return
+	}
+
+	task.Id = id
+	service.Id = id
+
+	renderJSON(writer, service)
 }
