@@ -1,19 +1,37 @@
-Get configurations
+Get configuration by id
 
-GET localhost:8000/configurations/
------------------------------
+GET localhost:8000/conf/{id}/
 
-Get single configuration
-
-GET localhost:8000/configuration/{id}/
 -----------------------------
 
 Create configurations
 
-POST localhost:8000/configuration/
+POST localhost:8000/conf/create/
 
 {
-    "data":["hello", "world", "124"]
+  "data": {
+        "sdasa": [
+            {
+                "entries": {
+                    "ds": "ds"
+                }
+            },
+            {
+                "entries": {
+                    "dsd": "sd"
+                }
+            },
+            {
+                "entries": {
+                    "dsd": "sd"
+                }
+            }
+        ]
+  }
 }
 
 -----------------------------
+
+Extend confg
+
+PUT localhost:8000/conf/extend/{id}/

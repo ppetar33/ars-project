@@ -22,9 +22,9 @@ func main() {
 		data: map[string]*Service{},
 	}
 
-	router.HandleFunc("/configurations/", server.createConfigurationHandler).Methods("POST")
-	router.HandleFunc("/configuration/{id}", server.getConfigurationHandler).Methods("GET")
-	// TODO router.HandleFunc("/configurations/", server.getAllConfigurations).Methods("GET")
+	router.HandleFunc("/conf/create/", server.createConfigurationHandler).Methods("POST")
+	router.HandleFunc("/conf/{id}/", server.getConfigurationHandler).Methods("GET")
+	router.HandleFunc("/conf/extend/{id}/", server.updateConfigurationHandler).Methods("PUT")
 
 	// start server
 	srv := &http.Server{Addr: "0.0.0.0:8000", Handler: router}
