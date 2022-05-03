@@ -84,3 +84,14 @@ func (ts *postServer) updateConfigurationHandler(writer http.ResponseWriter, req
 
 	renderJSON(writer, service)
 }
+
+func (ts *postServer) delConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
+	id := mux.Vars(req)["id"]
+	if v, ok := ts.data[id]; ok {
+		delete(ts.data, id)
+		renderJSON(writer, v)
+	} else {
+		err := errors.New("key not found")
+		http.Error(writer, err.Error(), http.StatusNotFound)
+	}
+}
