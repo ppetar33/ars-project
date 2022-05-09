@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="61821df1-d244-4da5-81ea-6daa420afa5e" name="Changes" comment="Adding confirguration">
+    <list default="true" id="61821df1-d244-4da5-81ea-6daa420afa5e" name="Changes" comment="Get configuration by Id">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server.go" beforeDir="false" afterPath="$PROJECT_DIR$/server.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -102,7 +101,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Adding confirguration" />
-    <option name="LAST_COMMIT_MESSAGE" value="Adding confirguration" />
+    <MESSAGE value="Get configuration by Id" />
+    <option name="LAST_COMMIT_MESSAGE" value="Get configuration by Id" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
