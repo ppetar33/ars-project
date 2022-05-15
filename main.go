@@ -19,17 +19,16 @@ func main() {
 	router.StrictSlash(true)
 
 	server := postServer{
-		data: map[string][]*Config{},
+		data: map[string]*Service{},
 	}
 
 	router.HandleFunc("/conf/create/", server.createConfigurationHandler).Methods("POST")
 	router.HandleFunc("/conf/{id}/{version}/", server.getConfigurationHandler).Methods("GET")
-	router.HandleFunc("/conf/", server.getAllConfiugrationsHandler).Methods("GET")
 	router.HandleFunc("/conf/extend/{id}/", server.updateConfigurationHandler).Methods("PUT")
 	router.HandleFunc("/conf/delete/{id}/", server.delConfigurationHandler).Methods("DELETE")
 
 	// start server
-	srv := &http.Server{Addr: "0.0.0.0:8000", Handler: router}
+	srv := &http.Server{Addr: "0.0.0.0:8080", Handler: router}
 	go func() {
 		log.Println("server starting")
 		if err := srv.ListenAndServe(); err != nil {
