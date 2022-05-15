@@ -8,7 +8,7 @@ import (
 )
 
 type postServer struct {
-	data map[string]*Service
+	data map[string][]*Config
 }
 
 func (ts *postServer) createConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
@@ -33,8 +33,8 @@ func (ts *postServer) createConfigurationHandler(writer http.ResponseWriter, req
 	}
 
 	id := createId()
-	service.Id = id
 	ts.data[id] = service
+
 	renderJSON(writer, service)
 }
 
@@ -49,17 +49,18 @@ func (ts *postServer) getConfigurationHandler(writer http.ResponseWriter, req *h
 	renderJSON(writer, task)
 }
 
+func (ts *postServer) getAllConfiugrationsHandler(w http.ResponseWriter, req *http.Request) {
+	allTasks := make(map[string][]*Config)
+	for k, v := range ts.data {
+		allTasks[k] = v
+	}
+	renderJSON(w, allTasks)
+}
+
 func (ts *postServer) updateConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
 	id := mux.Vars(req)["id"]
-	task, ok := ts.data[id]
 	contentType := req.Header.Get("Content-Type")
 	mediatype, _, errParse := mime.ParseMediaType(contentType)
-
-	if !ok {
-		err := errors.New("key not found")
-		http.Error(writer, err.Error(), http.StatusNotFound)
-		return
-	}
 
 	if errParse != nil {
 		http.Error(writer, errParse.Error(), http.StatusBadRequest)
@@ -79,10 +80,9 @@ func (ts *postServer) updateConfigurationHandler(writer http.ResponseWriter, req
 		return
 	}
 
-	task.Id = id
-	service.Id = id
+	ts.data[id] = append(ts.data[id], service...)
 
-	renderJSON(writer, service)
+	renderJSON(writer, ts.data[id])
 }
 
 func (ts *postServer) delConfigurationHandler(writer http.ResponseWriter, req *http.Request) {

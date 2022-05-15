@@ -19,11 +19,12 @@ func main() {
 	router.StrictSlash(true)
 
 	server := postServer{
-		data: map[string]*Service{},
+		data: map[string][]*Config{},
 	}
 
 	router.HandleFunc("/conf/create/", server.createConfigurationHandler).Methods("POST")
 	router.HandleFunc("/conf/{id}/", server.getConfigurationHandler).Methods("GET")
+	router.HandleFunc("/conf/", server.getAllConfiugrationsHandler).Methods("GET")
 	router.HandleFunc("/conf/extend/{id}/", server.updateConfigurationHandler).Methods("PUT")
 	router.HandleFunc("/conf/delete/{id}/", server.delConfigurationHandler).Methods("DELETE")
 
