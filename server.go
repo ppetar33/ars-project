@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gorilla/mux"
 	"mime"
 	"net/http"
@@ -33,20 +34,34 @@ func (ts *postServer) createConfigurationHandler(writer http.ResponseWriter, req
 	}
 
 	id := createId()
+	service.Id = id
+	service.Version = "1"
 	ts.data[id] = service
+	fmt.Println(service)
 
-	renderJSON(writer, service)
+  renderJSON(writer, service)
 }
 
 func (ts *postServer) getConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
 	id := mux.Vars(req)["id"]
+	version := mux.Vars(req)["version"]
 	task, ok := ts.data[id]
+
 	if !ok {
 		err := errors.New("key not found")
 		http.Error(writer, err.Error(), http.StatusNotFound)
 		return
 	}
-	renderJSON(writer, task)
+
+	if task.Version == version {
+		fmt.Println(task)
+		renderJSON(writer, task)
+	} else {
+		err := errors.New("key not found")
+		http.Error(writer, err.Error(), http.StatusNotFound)
+		return
+	}
+
 }
 
 func (ts *postServer) getAllConfiugrationsHandler(w http.ResponseWriter, req *http.Request) {

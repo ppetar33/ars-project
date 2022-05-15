@@ -23,7 +23,7 @@ func main() {
 	}
 
 	router.HandleFunc("/conf/create/", server.createConfigurationHandler).Methods("POST")
-	router.HandleFunc("/conf/{id}/", server.getConfigurationHandler).Methods("GET")
+	router.HandleFunc("/conf/{id}/{version}/", server.getConfigurationHandler).Methods("GET")
 	router.HandleFunc("/conf/", server.getAllConfiugrationsHandler).Methods("GET")
 	router.HandleFunc("/conf/extend/{id}/", server.updateConfigurationHandler).Methods("PUT")
 	router.HandleFunc("/conf/delete/{id}/", server.delConfigurationHandler).Methods("DELETE")
