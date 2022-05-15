@@ -19,7 +19,7 @@ func main() {
 	router.StrictSlash(true)
 
 	server := postServer{
-		data: map[string]*Config{},
+		data: map[string][]*Config{},
 	}
 
 	router.HandleFunc("/conf/create/", server.createConfigurationHandler).Methods("POST")

@@ -2,14 +2,13 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"github.com/gorilla/mux"
 	"mime"
 	"net/http"
 )
 
 type postServer struct {
-	data map[string][]*Config `json:"data"`
+	data map[string][]*Config
 }
 
 func (ts *postServer) createConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
@@ -34,8 +33,8 @@ func (ts *postServer) createConfigurationHandler(writer http.ResponseWriter, req
 	}
 
 	id := createId()
-	service.Id = id
 	ts.data[id] = service
+
 	renderJSON(writer, service)
 }
 
@@ -51,57 +50,39 @@ func (ts *postServer) getConfigurationHandler(writer http.ResponseWriter, req *h
 }
 
 func (ts *postServer) getAllConfiugrationsHandler(w http.ResponseWriter, req *http.Request) {
-	allTasks := []*Config{}
-	for _, v := range ts.data {
-		allTasks = append(allTasks, v)
+	allTasks := make(map[string][]*Config)
+	for k, v := range ts.data {
+		allTasks[k] = v
 	}
 	renderJSON(w, allTasks)
 }
 
 func (ts *postServer) updateConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
 	id := mux.Vars(req)["id"]
-	task, ok := ts.data[id]
-	//contentType := req.Header.Get("Content-Type")
-	//mediatype, _, errParse := mime.ParseMediaType(contentType)
+	contentType := req.Header.Get("Content-Type")
+	mediatype, _, errParse := mime.ParseMediaType(contentType)
 
-	if !ok {
-		err := errors.New("key not found")
-		http.Error(writer, err.Error(), http.StatusNotFound)
+	if errParse != nil {
+		http.Error(writer, errParse.Error(), http.StatusBadRequest)
 		return
 	}
-	//
-	//if errParse != nil {
-	//	http.Error(writer, errParse.Error(), http.StatusBadRequest)
-	//	return
-	//}
-	//
-	//if mediatype != "application/json" {
-	//	err := errors.New("expect application/json Content-Type")
-	//	http.Error(writer, err.Error(), http.StatusUnsupportedMediaType)
-	//	return
-	//}
-	//
+
+	if mediatype != "application/json" {
+		err := errors.New("expect application/json Content-Type")
+		http.Error(writer, err.Error(), http.StatusUnsupportedMediaType)
+		return
+	}
+
 	service, errDecode := decodeBody(req.Body)
-	//
+
 	if errDecode != nil {
 		http.Error(writer, errDecode.Error(), http.StatusBadRequest)
 		return
 	}
-	//
-	//task.Id = id
-	//service.Id = id
 
-	fmt.Println(task.Entries)    // staro
-	fmt.Println(service.Entries) // novo
-	//fmt.Println(service.Entries)
+	ts.data[id] = append(ts.data[id], service...)
 
-	for k, v := range service.Entries {
-		task.Entries[k] = v
-	}
-
-	fmt.Println(task.Entries)
-
-	renderJSON(writer, task)
+	renderJSON(writer, ts.data[id])
 }
 
 func (ts *postServer) delConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
