@@ -101,7 +101,11 @@ func (ts *postServer) updateConfigurationHandler(writer http.ResponseWriter, req
 }
 
 func (ts *postServer) getAllConfigurationsHandler(w http.ResponseWriter, req *http.Request) {
-	allTasks := ts.data
+	allTasks := []*Service{}
+	for _, v := range ts.data {
+		allTasks = append(allTasks, v)
+	}
+
 	renderJSON(w, allTasks)
 }
 
