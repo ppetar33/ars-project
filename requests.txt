@@ -1,17 +1,19 @@
 Get configuration by id
 
-GET localhost:8000/conf/{id}/
+GET localhost:8080/conf/{id}/{version}/
 
 -----------------------------
 
 Create configurations
 
-POST localhost:8000/conf/create/
+POST localhost:8080/conf/create/
 
 {
-  "data": {
-        "sdasa": [
+  "data":  [
             {
+                "label": {
+                    "l1": "v1"
+                },
                 "entries": {
                     "ds": "ds"
                 }
@@ -20,18 +22,26 @@ POST localhost:8000/conf/create/
                 "entries": {
                     "dsd": "sd"
                 }
-            },
-            {
-                "entries": {
-                    "dsd": "sd"
-                }
             }
         ]
-  }
+
 }
 
 -----------------------------
 
 Extend confg
 
-PUT localhost:8000/conf/extend/{id}/
+PUT localhost:8080/conf/extend/{id}/{version}
+
+-----------------------------
+
+Delete config
+
+DELETE localhost:8080/conf/delete/{id}/{version}
+
+
+-----------------------------
+
+Get all configs
+
+GET localhost:8080/conf/
