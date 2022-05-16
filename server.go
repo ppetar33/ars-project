@@ -37,7 +37,6 @@ func (ts *postServer) createConfigurationHandler(writer http.ResponseWriter, req
 	service.Id = id
 	service.Version = "1"
 	ts.data[id] = service
-	fmt.Println(service)
 	renderJSON(writer, service)
 }
 
@@ -65,15 +64,16 @@ func (ts *postServer) getConfigurationHandler(writer http.ResponseWriter, req *h
 
 func (ts *postServer) updateConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
 	id := mux.Vars(req)["id"]
-	task, ok := ts.data[id]
+	version := mux.Vars(req)["version"]
+	//task, ok := ts.data[id]
 	contentType := req.Header.Get("Content-Type")
 	mediatype, _, errParse := mime.ParseMediaType(contentType)
 
-	if !ok {
-		err := errors.New("key not found")
-		http.Error(writer, err.Error(), http.StatusNotFound)
-		return
-	}
+	//if !ok {
+	//	err := errors.New("key not found")
+	//	http.Error(writer, err.Error(), http.StatusNotFound)
+	//	return
+	//}
 
 	if errParse != nil {
 		http.Error(writer, errParse.Error(), http.StatusBadRequest)
@@ -93,10 +93,16 @@ func (ts *postServer) updateConfigurationHandler(writer http.ResponseWriter, req
 		return
 	}
 
-	task.Id = id
 	service.Id = id
+	service.Version = version
+	ts.data[id] = service
 
-	renderJSON(writer, service)
+	renderJSON(writer, ts.data[id])
+}
+
+func (ts *postServer) getAllConfigurationsHandler(w http.ResponseWriter, req *http.Request) {
+	allTasks := ts.data
+	renderJSON(w, allTasks)
 }
 
 func (ts *postServer) delConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
