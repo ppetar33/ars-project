@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gorilla/mux"
 	"mime"
 	"net/http"
@@ -21,7 +22,7 @@ func (ts *postServer) createConfigurationHandler(writer http.ResponseWriter, req
 	}
 
 	if mediatype != "application/json" {
-		err := errors.New("Expect application/json Content-Type")
+		err := errors.New("expect application/json Content-Type")
 		http.Error(writer, err.Error(), http.StatusUnsupportedMediaType)
 		return
 	}
@@ -34,17 +35,83 @@ func (ts *postServer) createConfigurationHandler(writer http.ResponseWriter, req
 
 	id := createId()
 	service.Id = id
+	service.Version = "1"
 	ts.data[id] = service
 	renderJSON(writer, service)
 }
 
 func (ts *postServer) getConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
 	id := mux.Vars(req)["id"]
+	version := mux.Vars(req)["version"]
 	task, ok := ts.data[id]
+
 	if !ok {
 		err := errors.New("key not found")
 		http.Error(writer, err.Error(), http.StatusNotFound)
 		return
 	}
-	renderJSON(writer, task)
+
+	if task.Version == version {
+		fmt.Println(task)
+		renderJSON(writer, task)
+	} else {
+		err := errors.New("key not found")
+		http.Error(writer, err.Error(), http.StatusNotFound)
+		return
+	}
+
+}
+
+func (ts *postServer) updateConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
+	id := mux.Vars(req)["id"]
+	version := mux.Vars(req)["version"]
+	//task, ok := ts.data[id]
+	contentType := req.Header.Get("Content-Type")
+	mediatype, _, errParse := mime.ParseMediaType(contentType)
+
+	//if !ok {
+	//	err := errors.New("key not found")
+	//	http.Error(writer, err.Error(), http.StatusNotFound)
+	//	return
+	//}
+
+	if errParse != nil {
+		http.Error(writer, errParse.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if mediatype != "application/json" {
+		err := errors.New("expect application/json Content-Type")
+		http.Error(writer, err.Error(), http.StatusUnsupportedMediaType)
+		return
+	}
+
+	service, errDecode := decodeBody(req.Body)
+
+	if errDecode != nil {
+		http.Error(writer, errDecode.Error(), http.StatusBadRequest)
+		return
+	}
+
+	service.Id = id
+	service.Version = version
+	ts.data[id] = service
+
+	renderJSON(writer, ts.data[id])
+}
+
+func (ts *postServer) getAllConfigurationsHandler(w http.ResponseWriter, req *http.Request) {
+	allTasks := ts.data
+	renderJSON(w, allTasks)
+}
+
+func (ts *postServer) delConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
+	id := mux.Vars(req)["id"]
+	if v, ok := ts.data[id]; ok {
+		delete(ts.data, id)
+		renderJSON(writer, v)
+	} else {
+		err := errors.New("key not found")
+		http.Error(writer, err.Error(), http.StatusNotFound)
+	}
 }
