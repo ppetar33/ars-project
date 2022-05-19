@@ -18,8 +18,13 @@ func main() {
 	router := mux.NewRouter()
 	router.StrictSlash(true)
 
+	store, err := ps.New()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	server := postServer{
-		data: map[string]*Service{},
+		store: store,
 	}
 
 	router.HandleFunc("/conf/create/", server.createConfigurationHandler).Methods("POST")
@@ -29,7 +34,7 @@ func main() {
 	router.HandleFunc("/conf/delete/{id}/{version}/", server.delConfigurationHandler).Methods("DELETE")
 
 	// start server
-	srv := &http.Server{Addr: "0.0.0.0:8080", Handler: router}
+	srv := &http.Server{Addr: "0.0.0.0:8000", Handler: router}
 	go func() {
 		log.Println("server starting")
 		if err := srv.ListenAndServe(); err != nil {

@@ -4,12 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
+	ps "github.com/milossimic/ars-project/poststore"
 	"mime"
 	"net/http"
 )
 
 type postServer struct {
-	data map[string]*Service
+	store *ps.PostStore
 }
 
 func (ts *postServer) createConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
