@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
-	ps "github.com/milossimic/ars-project/poststore"
+	ps "github.com/ppetar33/ars-project/poststore"
 	"mime"
 	"net/http"
 )

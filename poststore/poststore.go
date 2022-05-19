@@ -35,7 +35,7 @@ func (ps *PostStore) Get(id string) (*Service, error) {
 		return nil, err
 	}
 
-	post := &RequestPost{}
+	post := &Service{}
 	err = json.Unmarshal(pair.Value, post)
 	if err != nil {
 		return nil, err
