@@ -3,15 +3,16 @@ package main
 import (
 	"encoding/json"
 	"github.com/google/uuid"
+	ps "github.com/ppetar33/ars-project/poststore"
 	"io"
 	"net/http"
 )
 
-func decodeBody(r io.Reader) (*Service, error) {
+func decodeBody(r io.Reader) (*ps.Service, error) {
 	dec := json.NewDecoder(r)
 	dec.DisallowUnknownFields()
 
-	var rt Service
+	var rt ps.Service
 	if err := dec.Decode(&rt); err != nil {
 		return nil, err
 	}
