@@ -33,3 +33,14 @@ func renderJSON(w http.ResponseWriter, v interface{}) {
 func createId() string {
 	return uuid.New().String()
 }
+
+func decodeConfigBody(r io.Reader) (*ps.Service, error) {
+	dec := json.NewDecoder(r)
+	dec.DisallowUnknownFields()
+
+	var config *ps.Service
+	if err := dec.Decode(&config); err != nil {
+		return nil, err
+	}
+	return config, nil
+}

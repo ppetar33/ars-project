@@ -6,15 +6,20 @@ import (
 )
 
 const (
-	posts = "posts/%s"
-	all   = "posts"
+	all    = "conf/"
+	conf   = "conf/%s/%s/"
+	confId = "conf/%s/"
 )
 
-func generateKey() (string, string) {
+func generateKey(ver string) (string, string) {
 	id := uuid.New().String()
-	return fmt.Sprintf(posts, id), id
+	return fmt.Sprintf(conf, id, ver), id
 }
 
-func constructKey(id string) string {
-	return fmt.Sprintf(posts, id)
+func constructKey(id string, version string) string {
+	return fmt.Sprintf(conf, id, version)
+}
+
+func constructConfigIdKey(id string) string {
+	return fmt.Sprintf(confId, id)
 }
