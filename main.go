@@ -28,10 +28,22 @@ func main() {
 		store: store,
 	}
 
+	// RADI
 	router.HandleFunc("/conf/create/", server.createConfigurationHandler).Methods("POST")
-	router.HandleFunc("/conf/{id}/{version}/", server.getConfigurationHandler).Methods("GET")
+
+	// RADI
+	router.HandleFunc("/conf/{id}/{version}/", server.getConfigurationByIdAndVersion).Methods("GET")
+
+	// RADI
+	router.HandleFunc("/conf-versions/{id}/", server.getConfigurationById).Methods("GET")
+
+	// RADI
 	router.HandleFunc("/conf/", server.getAllConfigurationsHandler).Methods("GET")
-	router.HandleFunc("/conf/extend/{id}/{version}/", server.updateConfigurationHandler).Methods("PUT")
+
+	// NE RADI
+	router.HandleFunc("/conf/extend/{id}/{version}/", server.updateConfigurationHandler).Methods("POST")
+
+	// RADI
 	router.HandleFunc("/conf/delete/{id}/{version}/", server.delConfigurationHandler).Methods("DELETE")
 
 	// start server

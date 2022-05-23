@@ -2,6 +2,7 @@ package poststore
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/hashicorp/consul/api"
 	"os"
@@ -27,21 +28,22 @@ func New() (*PostStore, error) {
 	}, nil
 }
 
-func (ps *PostStore) Get(id string) (*Service, error) {
+func (ps *PostStore) Get(id string, version string) (*Service, error) {
 	kv := ps.cli.KV()
+	key := constructKey(id, version)
+	data, _, err := kv.Get(key, nil)
 
-	pair, _, err := kv.Get(constructKey(id), nil)
+	if err != nil || data == nil {
+		return nil, errors.New("no data")
+	}
+
+	service := &Service{}
+	err = json.Unmarshal(data.Value, service)
 	if err != nil {
 		return nil, err
 	}
 
-	post := &Service{}
-	err = json.Unmarshal(pair.Value, post)
-	if err != nil {
-		return nil, err
-	}
-
-	return post, nil
+	return service, nil
 }
 
 func (ps *PostStore) GetAll() ([]*Service, error) {
@@ -53,8 +55,10 @@ func (ps *PostStore) GetAll() ([]*Service, error) {
 
 	posts := []*Service{}
 	for _, pair := range data {
+		fmt.Println(pair)
 		post := &Service{}
 		err = json.Unmarshal(pair.Value, post)
+
 		if err != nil {
 			return nil, err
 		}
@@ -64,20 +68,33 @@ func (ps *PostStore) GetAll() ([]*Service, error) {
 	return posts, nil
 }
 
-func (ps *PostStore) Delete(id string) (map[string]string, error) {
+func (ps *PostStore) Delete(id string, version string) (*Service, error) {
 	kv := ps.cli.KV()
-	_, err := kv.Delete(constructKey(id), nil)
+	key := constructKey(id, version)
+	data, _, err := kv.Get(key, nil)
+
+	if err != nil || data == nil {
+		return nil, errors.New("no data")
+	}
+
+	_, errDelete := kv.Delete(key, nil)
+	if errDelete != nil {
+		return nil, err
+	}
+
+	service := &Service{}
+	err = json.Unmarshal(data.Value, service)
 	if err != nil {
 		return nil, err
 	}
 
-	return map[string]string{"Deleted": id}, nil
+	return service, nil
 }
 
 func (ps *PostStore) Post(post *Service) (*Service, error) {
 	kv := ps.cli.KV()
 
-	sid, rid := generateKey()
+	sid, rid := generateKey(post.Version)
 	post.Id = rid
 
 	data, err := json.Marshal(post)
@@ -92,4 +109,45 @@ func (ps *PostStore) Post(post *Service) (*Service, error) {
 	}
 
 	return post, nil
+}
+
+func (ps *PostStore) Update(service *Service) (*Service, error) {
+	kv := ps.cli.KV()
+
+	data, err := json.Marshal(service)
+	if err != nil {
+		return nil, err
+	}
+
+	c := &api.KVPair{Key: constructKey(service.Id, service.Version), Value: data}
+	_, err = kv.Put(c, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return service, nil
+}
+
+func (ps *PostStore) FindConfVersions(id string) ([]*Service, error) {
+	kv := ps.cli.KV()
+
+	key := constructConfigIdKey(id)
+	data, _, err := kv.List(key, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var configs []*Service
+
+	for _, pair := range data {
+		config := &Service{}
+		err := json.Unmarshal(pair.Value, config)
+		if err != nil {
+			return nil, err
+		}
+
+		configs = append(configs, config)
+	}
+
+	return configs, nil
 }
