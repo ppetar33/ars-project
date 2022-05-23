@@ -19,6 +19,17 @@ func decodeBody(r io.Reader) (*ps.Service, error) {
 	return &rt, nil
 }
 
+func decodeBodyConfig(r io.Reader) (*ps.Config, error) {
+	dec := json.NewDecoder(r)
+	dec.DisallowUnknownFields()
+
+	var rt ps.Config
+	if err := dec.Decode(&rt); err != nil {
+		return nil, err
+	}
+	return &rt, nil
+}
+
 func renderJSON(w http.ResponseWriter, v interface{}) {
 	js, err := json.Marshal(v)
 	if err != nil {

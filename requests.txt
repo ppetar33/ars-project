@@ -9,6 +9,7 @@ Create configurations
 POST localhost:8080/conf/create/
 
 {
+  "version": "1",
   "data":  [
             {
                 "label": {
@@ -45,3 +46,19 @@ DELETE localhost:8080/conf/delete/{id}/{version}
 Get all configs
 
 GET localhost:8080/conf/
+
+
+-----------------------------
+
+Search by labels
+
+localhost:8000/conf-labels/85eccddb-f992-4bd9-935e-a2a9b1f6ef08/4/
+
+{
+    "label": {
+        "l1": "v1",
+        "l2": "v2",
+        "l3": "v3"
+    }
+}
+
