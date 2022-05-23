@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/consul/api"
 	"os"
+	"reflect"
 )
 
 type PostStore struct {
@@ -46,6 +47,41 @@ func (ps *PostStore) Get(id string, version string) (*Service, error) {
 	return service, nil
 }
 
+func (ps *PostStore) FindByLabels(id string, version string, config *Config) (*Service, error) {
+	kv := ps.cli.KV()
+	key := constructKey(id, version)
+	data, _, err := kv.Get(key, nil)
+
+	if err != nil || data == nil {
+		return nil, errors.New("no data")
+	}
+
+	service := &Service{}
+	err = json.Unmarshal(data.Value, service)
+	if err != nil {
+		return nil, err
+	}
+
+	serviceReturn := &Service{}
+
+	res1 := false
+
+	for _, serviceData := range service.Data {
+		for key, value := range serviceData.Label {
+			res1 = reflect.DeepEqual(config.Label, serviceData.Label)
+			fmt.Println(key)
+			fmt.Println(value)
+		}
+	}
+
+	if res1 {
+		serviceReturn = service
+		return serviceReturn, nil
+	}
+
+	return nil, nil
+}
+
 func (ps *PostStore) GetAll() ([]*Service, error) {
 	kv := ps.cli.KV()
 	data, _, err := kv.List(all, nil)
@@ -62,6 +98,7 @@ func (ps *PostStore) GetAll() ([]*Service, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		posts = append(posts, post)
 	}
 

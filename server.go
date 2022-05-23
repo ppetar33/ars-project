@@ -84,6 +84,28 @@ func (ts *postServer) getAllConfigurationsHandler(w http.ResponseWriter, req *ht
 	renderJSON(w, allTasks)
 }
 
+func (ts *postServer) findConfigurationsByLabels(w http.ResponseWriter, req *http.Request) {
+	id := mux.Vars(req)["id"]
+	ver := mux.Vars(req)["version"]
+
+	configs, err := decodeBodyConfig(req.Body)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	task, ok := ts.store.FindByLabels(id, ver, configs)
+
+	if ok != nil {
+		err := errors.New("key not found")
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	renderJSON(w, task)
+}
+
 func (ts *postServer) getConfigurationByIdAndVersion(w http.ResponseWriter, req *http.Request) {
 	id := mux.Vars(req)["id"]
 	ver := mux.Vars(req)["version"]
