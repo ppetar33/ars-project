@@ -103,6 +103,12 @@ func (ts *postServer) findConfigurationsByLabels(w http.ResponseWriter, req *htt
 		return
 	}
 
+	if task == nil {
+		err := errors.New("key not found")
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
 	renderJSON(w, task)
 }
 
@@ -117,6 +123,13 @@ func (ts *postServer) getConfigurationByIdAndVersion(w http.ResponseWriter, req 
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
+
+	if task == nil {
+		err := errors.New("key not found")
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
 	renderJSON(w, task)
 }
 
@@ -140,5 +153,12 @@ func (ts *postServer) getConfigurationById(w http.ResponseWriter, req *http.Requ
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
+
+	if task == nil {
+		err := errors.New("key not found")
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
 	renderJSON(w, task)
 }
