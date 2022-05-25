@@ -22,11 +22,12 @@ func main() {
 		data: map[string]*Service{},
 	}
 
-	router.HandleFunc("/conf/create/", server.createConfigurationHandler).Methods("POST")
-	router.HandleFunc("/conf/{id}/{version}/", server.getConfigurationHandler).Methods("GET")
-	router.HandleFunc("/conf/", server.getAllConfigurationsHandler).Methods("GET")
-	router.HandleFunc("/conf/extend/{id}/{version}/", server.updateConfigurationHandler).Methods("PUT")
-	router.HandleFunc("/conf/delete/{id}/{version}/", server.delConfigurationHandler).Methods("DELETE")
+	router.HandleFunc("/conf/create/", count(server.createConfigurationHandler)).Methods("POST")
+	router.HandleFunc("/conf/{id}/{version}/", count(server.getConfigurationHandler)).Methods("GET")
+	router.HandleFunc("/conf/", count(server.getAllConfigurationsHandler)).Methods("GET")
+	router.HandleFunc("/conf/extend/{id}/{version}/", count(server.updateConfigurationHandler)).Methods("PUT")
+	router.HandleFunc("/conf/delete/{id}/{version}/", count(server.delConfigurationHandler)).Methods("DELETE")
+	router.Path("/metrics").Handler(metricsHandler())
 
 	// start server
 	srv := &http.Server{Addr: "0.0.0.0:8080", Handler: router}
