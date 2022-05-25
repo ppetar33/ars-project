@@ -28,6 +28,7 @@ func main() {
 		store: store,
 	}
 
+	// ne radi gde god ima id i verzija
 	router.HandleFunc("/conf/create/", countGetByCreate(count(server.createConfigurationHandler))).Methods("POST")
 	router.HandleFunc("/conf/{id}/{version}/", countGetByIdVersion(count(server.getConfigurationByIdAndVersion))).Methods("GET")
 	router.HandleFunc("/conf-versions/{id}/", countGetById(count(server.getConfigurationById))).Methods("GET")
