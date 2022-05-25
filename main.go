@@ -28,13 +28,13 @@ func main() {
 		store: store,
 	}
 
-	router.HandleFunc("/conf/create/", count(server.createConfigurationHandler)).Methods("POST")
-	router.HandleFunc("/conf/{id}/{version}/", count(server.getConfigurationByIdAndVersion)).Methods("GET")
-	router.HandleFunc("/conf-versions/{id}/", count(server.getConfigurationById)).Methods("GET")
-	router.HandleFunc("/conf-labels/{id}/{version}/", count(server.findConfigurationsByLabels)).Methods("GET")
-	router.HandleFunc("/conf/", count(server.getAllConfigurationsHandler)).Methods("GET")
-	router.HandleFunc("/conf/extend/{id}/{version}/", count(server.updateConfigurationHandler)).Methods("POST")
-	router.HandleFunc("/conf/delete/{id}/{version}/", count(server.delConfigurationHandler)).Methods("DELETE")
+	router.HandleFunc("/conf/create/", countGetByCreate(count(server.createConfigurationHandler))).Methods("POST")
+	router.HandleFunc("/conf/{id}/{version}/", countGetByIdVersion(count(server.getConfigurationByIdAndVersion))).Methods("GET")
+	router.HandleFunc("/conf-versions/{id}/", countGetById(count(server.getConfigurationById))).Methods("GET")
+	router.HandleFunc("/conf-labels/{id}/{version}/", countGetByLabels(count(server.findConfigurationsByLabels))).Methods("GET")
+	router.HandleFunc("/conf/", countGetAll(count(server.getAllConfigurationsHandler))).Methods("GET")
+	router.HandleFunc("/conf/extend/{id}/{version}/", countGetByExtend(count(server.updateConfigurationHandler))).Methods("POST")
+	router.HandleFunc("/conf/delete/{id}/{version}/", countGetByDelete(count(server.delConfigurationHandler))).Methods("DELETE")
 	router.Path("/metrics").Handler(metricsHandler())
 
 	// start server
