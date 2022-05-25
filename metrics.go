@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/prometheus/ars-project/prometheus"
-	"github.com/prometheus/ars-project/prometheus/promhttp"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
 )
 
