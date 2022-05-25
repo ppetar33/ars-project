@@ -3,15 +3,27 @@ package main
 import (
 	"encoding/json"
 	"github.com/google/uuid"
+	ps "github.com/ppetar33/ars-project/poststore"
 	"io"
 	"net/http"
 )
 
-func decodeBody(r io.Reader) (*Service, error) {
+func decodeBody(r io.Reader) (*ps.Service, error) {
 	dec := json.NewDecoder(r)
 	dec.DisallowUnknownFields()
 
-	var rt Service
+	var rt ps.Service
+	if err := dec.Decode(&rt); err != nil {
+		return nil, err
+	}
+	return &rt, nil
+}
+
+func decodeBodyConfig(r io.Reader) (*ps.Config, error) {
+	dec := json.NewDecoder(r)
+	dec.DisallowUnknownFields()
+
+	var rt ps.Config
 	if err := dec.Decode(&rt); err != nil {
 		return nil, err
 	}
@@ -31,4 +43,15 @@ func renderJSON(w http.ResponseWriter, v interface{}) {
 
 func createId() string {
 	return uuid.New().String()
+}
+
+func decodeConfigBody(r io.Reader) (*ps.Service, error) {
+	dec := json.NewDecoder(r)
+	dec.DisallowUnknownFields()
+
+	var config *ps.Service
+	if err := dec.Decode(&config); err != nil {
+		return nil, err
+	}
+	return config, nil
 }

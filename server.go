@@ -2,14 +2,14 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"github.com/gorilla/mux"
+	ps "github.com/ppetar33/ars-project/poststore"
 	"mime"
 	"net/http"
 )
 
 type postServer struct {
-	data map[string]*Service
+	store *ps.PostStore
 }
 
 func (ts *postServer) createConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
@@ -33,100 +33,132 @@ func (ts *postServer) createConfigurationHandler(writer http.ResponseWriter, req
 		return
 	}
 
-	id := createId()
-	service.Id = id
-	service.Version = "1"
-	ts.data[id] = service
-	renderJSON(writer, service)
-}
-
-func (ts *postServer) getConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
-	id := mux.Vars(req)["id"]
-	version := mux.Vars(req)["version"]
-	task, ok := ts.data[id]
-
-	if !ok {
-		err := errors.New("key not found")
-		http.Error(writer, err.Error(), http.StatusNotFound)
+	post, err := ts.store.Post(service)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	if task.Version == version {
-		fmt.Println(task)
-		renderJSON(writer, task)
-	} else {
-		err := errors.New("key not found")
-		http.Error(writer, err.Error(), http.StatusNotFound)
-		return
-	}
-
+	renderJSON(writer, post)
 }
 
-func (ts *postServer) updateConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
-	id := mux.Vars(req)["id"]
-	version := mux.Vars(req)["version"]
-	task, ok := ts.data[id]
+func (ts *postServer) updateConfigurationHandler(w http.ResponseWriter, req *http.Request) {
 	contentType := req.Header.Get("Content-Type")
-	mediatype, _, errParse := mime.ParseMediaType(contentType)
+	mediatype, _, err := mime.ParseMediaType(contentType)
+	id := mux.Vars(req)["id"]
 
-	if !ok {
-		err := errors.New("key not found")
-		http.Error(writer, err.Error(), http.StatusNotFound)
-		return
-	}
-
-	if errParse != nil {
-		http.Error(writer, errParse.Error(), http.StatusBadRequest)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	if mediatype != "application/json" {
-		err := errors.New("expect application/json Content-Type")
-		http.Error(writer, err.Error(), http.StatusUnsupportedMediaType)
+		err := errors.New("Expect application/json Content-Type")
+		http.Error(w, err.Error(), http.StatusUnsupportedMediaType)
 		return
 	}
 
-	service, errDecode := decodeBody(req.Body)
-
-	if errDecode != nil {
-		http.Error(writer, errDecode.Error(), http.StatusBadRequest)
+	rt, err := decodeConfigBody(req.Body)
+	if err != nil {
+		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
 		return
 	}
 
-	if task.Version == version {
-		service.Id = id
-		//task.Version = service.Version
-		//service.Version = version
-		ts.data[id] = service
+	rt.Id = id
+	service, err := ts.store.Update(rt)
 
-		fmt.Println(task.Version)
-		fmt.Println(service.Version)
-
-		renderJSON(writer, ts.data[id])
-	} else {
-		err := errors.New("key not found")
-		http.Error(writer, err.Error(), http.StatusNotFound)
+	if err != nil {
+		http.Error(w, "Given config version already exists! ", http.StatusBadRequest)
 		return
 	}
+
+	w.Write([]byte(service.Id))
 
 }
 
 func (ts *postServer) getAllConfigurationsHandler(w http.ResponseWriter, req *http.Request) {
-	allTasks := []*Service{}
-	for _, v := range ts.data {
-		allTasks = append(allTasks, v)
+	allTasks, err := ts.store.GetAll()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
-
 	renderJSON(w, allTasks)
 }
 
-func (ts *postServer) delConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
+func (ts *postServer) findConfigurationsByLabels(w http.ResponseWriter, req *http.Request) {
 	id := mux.Vars(req)["id"]
-	if v, ok := ts.data[id]; ok {
-		delete(ts.data, id)
-		renderJSON(writer, v)
-	} else {
-		err := errors.New("key not found")
-		http.Error(writer, err.Error(), http.StatusNotFound)
+	ver := mux.Vars(req)["version"]
+
+	configs, err := decodeBodyConfig(req.Body)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
+
+	task, ok := ts.store.FindByLabels(id, ver, configs)
+
+	if ok != nil {
+		err := errors.New("key not found")
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	if task == nil {
+		err := errors.New("key not found")
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	renderJSON(w, task)
+}
+
+func (ts *postServer) getConfigurationByIdAndVersion(w http.ResponseWriter, req *http.Request) {
+	id := mux.Vars(req)["id"]
+	ver := mux.Vars(req)["version"]
+
+	task, ok := ts.store.Get(id, ver)
+
+	if ok != nil {
+		err := errors.New("key not found")
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	if task == nil {
+		err := errors.New("key not found")
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	renderJSON(w, task)
+}
+
+func (ts *postServer) delConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
+	ver := mux.Vars(req)["version"]
+	id := mux.Vars(req)["id"]
+	task, ok := ts.store.Delete(id, ver)
+	if ok != nil {
+		err := errors.New("not found")
+		http.Error(writer, err.Error(), http.StatusNotFound)
+		return
+	}
+	renderJSON(writer, task)
+}
+
+func (ts *postServer) getConfigurationById(w http.ResponseWriter, req *http.Request) {
+	id := mux.Vars(req)["id"]
+	task, ok := ts.store.FindConfVersions(id)
+	if ok != nil {
+		err := errors.New("not found")
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	if task == nil {
+		err := errors.New("key not found")
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	renderJSON(w, task)
 }

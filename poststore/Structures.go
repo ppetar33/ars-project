@@ -1,4 +1,4 @@
-package main
+package poststore
 
 type Config struct {
 	Label   map[string]string `json:"label"`
