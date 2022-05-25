@@ -15,6 +15,7 @@ type postServer struct {
 func (ts *postServer) createConfigurationHandler(writer http.ResponseWriter, req *http.Request) {
 	contentType := req.Header.Get("Content-Type")
 	mediatype, _, err := mime.ParseMediaType(contentType)
+	idempotencyId := req.Header.Get("x-idempotency-key")
 
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -33,18 +34,25 @@ func (ts *postServer) createConfigurationHandler(writer http.ResponseWriter, req
 		return
 	}
 
-	post, err := ts.store.Post(service)
-	if err != nil {
-		http.Error(writer, err.Error(), http.StatusBadRequest)
-		return
+	existService, err := ts.store.FindConfByIdempotency(idempotencyId)
+	if existService != nil {
+		post, err := ts.store.Post(service, idempotencyId)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		renderJSON(writer, post)
+	} else {
+		renderJSON(writer, service)
 	}
-	renderJSON(writer, post)
+
 }
 
 func (ts *postServer) updateConfigurationHandler(w http.ResponseWriter, req *http.Request) {
 	contentType := req.Header.Get("Content-Type")
 	mediatype, _, err := mime.ParseMediaType(contentType)
 	id := mux.Vars(req)["id"]
+	idempotencyId := req.Header.Get("x-idempotency-key")
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -63,15 +71,20 @@ func (ts *postServer) updateConfigurationHandler(w http.ResponseWriter, req *htt
 		return
 	}
 
-	rt.Id = id
-	service, err := ts.store.Update(rt)
+	existService, err := ts.store.FindConfByIdempotency(idempotencyId)
+	if existService != nil {
+		rt.Id = id
+		service, err := ts.store.Update(rt, idempotencyId)
 
-	if err != nil {
-		http.Error(w, "Given config version already exists! ", http.StatusBadRequest)
-		return
+		if err != nil {
+			http.Error(w, "Given config version already exists! ", http.StatusBadRequest)
+			return
+		}
+
+		w.Write([]byte(service.Id))
+	} else {
+		renderJSON(w, rt)
 	}
-
-	w.Write([]byte(service.Id))
 
 }
 

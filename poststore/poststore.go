@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/consul/api"
 	"os"
 	"reflect"
+	"strings"
 )
 
 type PostStore struct {
@@ -91,7 +92,7 @@ func (ps *PostStore) GetAll() ([]*Service, error) {
 
 	posts := []*Service{}
 	for _, pair := range data {
-		fmt.Println(pair)
+		fmt.Println(pair.Key)
 		post := &Service{}
 		err = json.Unmarshal(pair.Value, post)
 
@@ -128,10 +129,10 @@ func (ps *PostStore) Delete(id string, version string) (*Service, error) {
 	return service, nil
 }
 
-func (ps *PostStore) Post(post *Service) (*Service, error) {
+func (ps *PostStore) Post(post *Service, idempotencyKey string) (*Service, error) {
 	kv := ps.cli.KV()
 
-	sid, rid := generateKey(post.Version)
+	sid, rid := generateKeyWithIdempotency(post.Version, idempotencyKey)
 	post.Id = rid
 
 	data, err := json.Marshal(post)
@@ -148,7 +149,7 @@ func (ps *PostStore) Post(post *Service) (*Service, error) {
 	return post, nil
 }
 
-func (ps *PostStore) Update(service *Service) (*Service, error) {
+func (ps *PostStore) Update(service *Service, idempotencyId string) (*Service, error) {
 	kv := ps.cli.KV()
 
 	data, err := json.Marshal(service)
@@ -156,7 +157,7 @@ func (ps *PostStore) Update(service *Service) (*Service, error) {
 		return nil, err
 	}
 
-	c := &api.KVPair{Key: constructKey(service.Id, service.Version), Value: data}
+	c := &api.KVPair{Key: constructKeyUpdatey(service.Id, service.Version, idempotencyId), Value: data}
 	_, err = kv.Put(c, nil)
 	if err != nil {
 		return nil, err
@@ -187,4 +188,28 @@ func (ps *PostStore) FindConfVersions(id string) ([]*Service, error) {
 	}
 
 	return configs, nil
+}
+
+func (ps *PostStore) FindConfByIdempotency(idempotencyId string) (*Service, error) {
+	kv := ps.cli.KV()
+	data, _, err := kv.List(all, nil)
+	if err != nil {
+		return nil, err
+	}
+	postic := &Service{}
+	for _, pair := range data {
+		keyNiz := strings.SplitAfter(pair.Key, "/")
+		noviId := keyNiz[3]
+		if noviId == idempotencyId {
+			return nil, nil
+		} else {
+			post := &Service{}
+			err = json.Unmarshal(pair.Value, post)
+			if err != nil {
+				return nil, err
+			}
+			postic = post
+		}
+	}
+	return postic, nil
 }
