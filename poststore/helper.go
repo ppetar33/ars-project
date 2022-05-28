@@ -8,6 +8,7 @@ import (
 const (
 	all             = "conf/"
 	conf            = "conf/%s/%s"
+	testConf        = "conf/%s/%s/"
 	confId          = "conf/%s/"
 	confIdempotency = "conf/%s/%s/%s"
 )
@@ -32,4 +33,8 @@ func constructKey(id string, version string) string {
 
 func constructConfigIdKey(id string) string {
 	return fmt.Sprintf(confId, id)
+}
+
+func constructConfigIdVarsionTest(id string, version string) string {
+	return fmt.Sprintf(testConf, id, version)
 }

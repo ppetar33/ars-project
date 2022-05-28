@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gorilla/mux"
 	ps "github.com/ppetar33/ars-project/poststore"
 	"mime"
@@ -129,7 +130,9 @@ func (ts *postServer) getConfigurationByIdAndVersion(w http.ResponseWriter, req 
 	id := mux.Vars(req)["id"]
 	ver := mux.Vars(req)["version"]
 
-	task, ok := ts.store.Get(id, ver)
+	task, key, ok := ts.store.Get(id, ver)
+
+	fmt.Println(key)
 
 	if ok != nil {
 		err := errors.New("key not found")
