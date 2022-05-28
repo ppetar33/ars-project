@@ -30,44 +30,46 @@ func New() (*PostStore, error) {
 	}, nil
 }
 
-func (ps *PostStore) Get(id string, version string) (*Service, error) {
+func (ps *PostStore) Get(id string, version string) (*Service, string, error) {
 	kv := ps.cli.KV()
 	key := constructKey(id, version)
-	data, _, err := kv.Get(key, nil)
+	data, _, err := kv.List(key, nil)
 
 	if err != nil || data == nil {
-		return nil, errors.New("no data")
+		return nil, "", errors.New("no data")
 	}
 
-	service := &Service{}
-	err = json.Unmarshal(data.Value, service)
-	if err != nil {
-		return nil, err
+	service := []*Service{}
+	key = ""
+	for _, pair := range data {
+		post := &Service{}
+		key = pair.Key
+		err = json.Unmarshal(pair.Value, post)
+
+		if err != nil {
+			return nil, "", err
+		}
+
+		service = append(service, post)
 	}
 
-	return service, nil
+	return service[0], key, nil
 }
 
 func (ps *PostStore) FindByLabels(id string, version string, config *Config) (*Service, error) {
-	kv := ps.cli.KV()
-	key := constructKey(id, version)
-	data, _, err := kv.Get(key, nil)
+	data, key, err := ps.Get(id, version)
 
 	if err != nil || data == nil {
 		return nil, errors.New("no data")
 	}
 
-	service := &Service{}
-	err = json.Unmarshal(data.Value, service)
-	if err != nil {
-		return nil, err
-	}
+	fmt.Println(key)
 
 	serviceReturn := &Service{}
 
 	res1 := false
 
-	for _, serviceData := range service.Data {
+	for _, serviceData := range data.Data {
 		for key, value := range serviceData.Label {
 			res1 = reflect.DeepEqual(config.Label, serviceData.Label)
 			fmt.Println(key)
@@ -76,7 +78,7 @@ func (ps *PostStore) FindByLabels(id string, version string, config *Config) (*S
 	}
 
 	if res1 {
-		serviceReturn = service
+		serviceReturn = data
 		return serviceReturn, nil
 	}
 
@@ -108,21 +110,10 @@ func (ps *PostStore) GetAll() ([]*Service, error) {
 
 func (ps *PostStore) Delete(id string, version string) (*Service, error) {
 	kv := ps.cli.KV()
-	key := constructKey(id, version)
-	data, _, err := kv.Get(key, nil)
-
-	if err != nil || data == nil {
-		return nil, errors.New("no data")
-	}
+	service, key, err := ps.Get(id, version)
 
 	_, errDelete := kv.Delete(key, nil)
 	if errDelete != nil {
-		return nil, err
-	}
-
-	service := &Service{}
-	err = json.Unmarshal(data.Value, service)
-	if err != nil {
 		return nil, err
 	}
 

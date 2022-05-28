@@ -1,0 +1,17 @@
+{
+	"ulid": "01G45SA64EKH84EEDK78WQ21RN",
+	"minTime": 1653494400000,
+	"maxTime": 1653501600000,
+	"stats": {
+		"numSamples": 2395,
+		"numSeries": 5,
+		"numChunks": 25
+	},
+	"compaction": {
+		"level": 1,
+		"sources": [
+			"01G45SA64EKH84EEDK78WQ21RN"
+		]
+	},
+	"version": 1
+}
